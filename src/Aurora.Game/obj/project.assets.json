@@ -130,6 +130,33 @@
         "runtime": {
           "lib/netcoreapp2.0/_._": {}
         }
+      },
+      "Aurora.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "MonoGame.Framework.DesktopGL": "3.8.4.1"
+        },
+        "compile": {
+          "bin/placeholder/Aurora.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Aurora.Core.dll": {}
+        }
+      },
+      "Aurora.Engine/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Aurora.Core": "1.0.0",
+          "MonoGame.Framework.DesktopGL": "3.8.4.1"
+        },
+        "compile": {
+          "bin/placeholder/Aurora.Engine.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Aurora.Engine.dll": {}
+        }
       }
     }
   },
@@ -286,10 +313,22 @@
         "useSharedDesignerContext.txt",
         "version.txt"
       ]
+    },
+    "Aurora.Core/1.0.0": {
+      "type": "project",
+      "path": "../Aurora.Core/Aurora.Core.csproj",
+      "msbuildProject": "../Aurora.Core/Aurora.Core.csproj"
+    },
+    "Aurora.Engine/1.0.0": {
+      "type": "project",
+      "path": "../Aurora.Engine/Aurora.Engine.csproj",
+      "msbuildProject": "../Aurora.Engine/Aurora.Engine.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "Aurora.Core >= 1.0.0",
+      "Aurora.Engine >= 1.0.0",
       "MonoGame.Content.Builder.Task >= 3.8.*",
       "MonoGame.Framework.DesktopGL >= 3.8.*"
     ]
@@ -320,7 +359,14 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\Hector\\Documents\\proyectos-git\\aurora-engine\\src\\Aurora.Core\\Aurora.Core.csproj": {
+              "projectPath": "C:\\Users\\Hector\\Documents\\proyectos-git\\aurora-engine\\src\\Aurora.Core\\Aurora.Core.csproj"
+            },
+            "C:\\Users\\Hector\\Documents\\proyectos-git\\aurora-engine\\src\\Aurora.Engine\\Aurora.Engine.csproj": {
+              "projectPath": "C:\\Users\\Hector\\Documents\\proyectos-git\\aurora-engine\\src\\Aurora.Engine\\Aurora.Engine.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
