@@ -15,6 +15,8 @@ public class TileMap
         Width = width;
         Height = height;
         TileSize = tileSize;
+
+        Tiles = new int[width * height];
     }
 
     public int GetTile(int x, int y)
