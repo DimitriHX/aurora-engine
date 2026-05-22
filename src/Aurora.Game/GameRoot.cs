@@ -6,6 +6,7 @@ using Aurora.Engine.Camera;
 using System;
 using Aurora.Engine.Scenes;
 using Aurora.Game.Scenes;
+using Aurora.Engine.Assets;
 
 namespace Aurora.Game;
 
@@ -17,6 +18,8 @@ public class GameRoot : Microsoft.Xna.Framework.Game
     private InputManager _input = null;
     private Camera2D _camera = null;
     private SceneManager _sceneManager = null;
+    private AssetManager _assets = null!;
+
     public GameRoot()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -50,13 +53,16 @@ public class GameRoot : Microsoft.Xna.Framework.Game
 
         _textureRenderer = new TextureRenderer(_spriteBatch);
 
+        _assets = new AssetManager(Content);
+
         _sceneManager.ChangeScene(
             new WorldScene(
                 GraphicsDevice,
                 _spriteBatch,
                 _textureRenderer,
                 _input,
-                _camera
+                _camera,
+                _assets
             )
         );
     }

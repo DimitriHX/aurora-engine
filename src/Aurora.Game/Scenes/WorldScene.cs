@@ -5,6 +5,7 @@ using Aurora.Engine.Input;
 using Aurora.Engine.Camera;
 using Aurora.Engine.Scenes;
 using Aurora.Engine.Tilemaps;
+using Aurora.Engine.Assets;
 
 namespace Aurora.Game.Scenes;
 
@@ -20,7 +21,9 @@ public class WorldScene : Scene
     private TileMap _map = null!;
     private TileRenderer _tileRenderer = null!;
 
-    private Texture2D _pixel = null;
+    private Texture2D _playerTexture = null;
+    private Texture2D _pixel = null!;
+    private AssetManager _assets = null!;
 
     private Vector2 _position = new(100, 100);
 
@@ -29,7 +32,8 @@ public class WorldScene : Scene
         SpriteBatch spriteBatch,
         TextureRenderer renderer,
         InputManager input,
-        Camera2D camera
+        Camera2D camera,
+        AssetManager assets
         )
     {
         _graphicsDevice = graphicsDevice;
@@ -37,6 +41,7 @@ public class WorldScene : Scene
         _renderer = renderer;   
         _input = input;
         _camera = camera;
+        _assets = assets;
         _tileRenderer = new TileRenderer(spriteBatch);
     }
 
@@ -44,6 +49,8 @@ public class WorldScene : Scene
     {
         _pixel = new Texture2D(_graphicsDevice, 1, 1);
         _pixel.SetData(new[] { Color.White });
+        _playerTexture = _assets.LoadTexture("Textures/player");
+
 
         _map = new TileMap(32, 32, 32);
 
@@ -85,11 +92,12 @@ public class WorldScene : Scene
 
         _tileRenderer.Draw(_map, _pixel);
 
+
         _renderer.Draw(
-            _pixel,
+            _playerTexture,
             _position,
             new Vector2(32,32),
-            Color.CornflowerBlue
+            Color.White
         );
 
         _spriteBatch.End();

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RollForward>Major</RollForward>
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
@@ -29,5 +29,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Aurora.Engine\Aurora.Engine.csproj" />
     <ProjectReference Include="..\Aurora.Core\Aurora.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+  <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
 </Project>
