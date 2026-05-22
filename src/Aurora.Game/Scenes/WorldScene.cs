@@ -1,11 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Aurora.Engine.Rendering ;
+using Aurora.Engine.Rendering;
 using Aurora.Engine.Input;
 using Aurora.Engine.Camera;
 using Aurora.Engine.Scenes;
-using System;
-
 
 namespace Aurora.Game.Scenes;
 
@@ -54,13 +52,13 @@ public class WorldScene : Scene
         if (_input.Right())
             _position.X += speed * delta;
 
-        if (_input.Up())   
+        if (_input.Up())
             _position.Y -= speed * delta;
 
         if (_input.Down())
             _position.Y += speed * delta;
 
-        _camera.Position = _position - new Vector2(640, 360); 
+        _camera.Position = _position - new Vector2(640, 360);
     }
 
     public override void Draw(GameTime gameTime)
