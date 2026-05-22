@@ -1,2 +1,3 @@
-﻿using var game = new GameRoot();
+﻿// increible no?
+using var game = new Aurora.Game.GameRoot();
 game.Run();
