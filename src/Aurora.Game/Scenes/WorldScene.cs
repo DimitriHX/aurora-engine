@@ -20,6 +20,9 @@ public class WorldScene : Scene
 
     private TileMap _map = null!;
     private TileRenderer _tileRenderer = null!;
+    private TileSet _tileSet = null!;
+    private Texture2D _tileSetTexture = null!;
+
 
     private Texture2D _playerTexture = null;
     private Texture2D _pixel = null!;
@@ -49,7 +52,21 @@ public class WorldScene : Scene
     {
         _pixel = new Texture2D(_graphicsDevice, 1, 1);
         _pixel.SetData(new[] { Color.White });
-        _playerTexture = _assets.LoadTexture("Textures/player");
+        _playerTexture = 
+            _assets.LoadTexture("Textures/player");
+        _tileSetTexture =
+            _assets.LoadTexture("Textures/tileset");
+        _tileSet = new TileSet(_tileSetTexture);
+
+        _tileSet.RegisterTile(
+            0,
+            new Rectangle(0, 0, 32, 32)
+        );
+
+        _tileSet.RegisterTile(
+            1,
+            new Rectangle(32,0,32,32)
+        );
 
 
         _map = new TileMap(32, 32, 32);
@@ -90,7 +107,7 @@ public class WorldScene : Scene
     {
         _spriteBatch.Begin(transformMatrix: _camera.Transform);
 
-        _tileRenderer.Draw(_map, _pixel);
+        _tileRenderer.Draw(_map, _tileSet);
 
 
         _renderer.Draw(

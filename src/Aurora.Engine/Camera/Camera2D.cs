@@ -8,8 +8,8 @@ public class Camera2D
 
     public Matrix Transform => 
         Matrix.CreateTranslation(
-            -Position.X,
-            -Position.Y,
+            -(int)Position.X,
+            -(int)Position.Y,
             0f
         );
 }

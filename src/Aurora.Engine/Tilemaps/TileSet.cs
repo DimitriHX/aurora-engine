@@ -1,12 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
-namespace Aurora.Engine.Tilemaps
+namespace Aurora.Engine.Tilemaps;
+
+public class TileSet
 {
-    internal class TileSet
+    public Texture2D Texture { get;}
+
+    private readonly Dictionary<int, Rectangle> _sourceRectangles = new();
+
+    public TileSet(Texture2D texture) 
+    { 
+        Texture = texture;
+    }
+
+    public void RegisterTile(
+        int tileId,
+        Rectangle sourceRectangle)
     {
+        _sourceRectangles[tileId] = sourceRectangle;
+    }
+
+    public Rectangle GetSourceRectangle( int tileId)
+    {
+        return _sourceRectangles[tileId];
     }
 }
