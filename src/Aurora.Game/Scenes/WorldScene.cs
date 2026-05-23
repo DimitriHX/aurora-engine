@@ -105,7 +105,9 @@ public class WorldScene : Scene
 
     public override void Draw(GameTime gameTime)
     {
-        _spriteBatch.Begin(transformMatrix: _camera.Transform);
+        _spriteBatch.Begin(
+            samplerState: SamplerState.PointClamp,
+            transformMatrix: _camera.Transform);
 
         _tileRenderer.Draw(_map, _tileSet);
 
