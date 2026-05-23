@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Xna.Framework.Graphics;
 
-namespace Aurora.Engine.Entities
+namespace Aurora.Engine.Entities;
+
+public class SpriteEntity : Entity
 {
-    internal class SpriteEntity
-    {
-    }
+    public Texture2D Texture { get; set; } = null!;
 }

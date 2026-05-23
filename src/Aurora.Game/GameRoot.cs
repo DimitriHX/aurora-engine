@@ -13,8 +13,10 @@ namespace Aurora.Game;
 public class GameRoot : Microsoft.Xna.Framework.Game
 {
     private readonly GraphicsDeviceManager _graphics;
+    
     private SpriteBatch _spriteBatch = null;
     private TextureRenderer _textureRenderer = null;
+    private EntityRenderer _entityRenderer = null;
     private InputManager _input = null;
     private Camera2D _camera = null;
     private SceneManager _sceneManager = null;
@@ -60,6 +62,7 @@ public class GameRoot : Microsoft.Xna.Framework.Game
                 GraphicsDevice,
                 _spriteBatch,
                 _textureRenderer,
+                _entityRenderer,
                 _input,
                 _camera,
                 _assets

@@ -6,6 +6,8 @@ using Aurora.Engine.Camera;
 using Aurora.Engine.Scenes;
 using Aurora.Engine.Tilemaps;
 using Aurora.Engine.Assets;
+using Aurora.Engine.Entities;
+using System;
 
 namespace Aurora.Game.Scenes;
 
@@ -28,12 +30,17 @@ public class WorldScene : Scene
     private Texture2D _pixel = null!;
     private AssetManager _assets = null!;
 
+    // jugador xd
+    private SpriteEntity _player = null!;
+    private EntityRenderer _entityRenderer = null!;
+
     private Vector2 _position = new(100, 100);
 
     public WorldScene(
         GraphicsDevice graphicsDevice,
         SpriteBatch spriteBatch,
         TextureRenderer renderer,
+        EntityRenderer entityRenderer,
         InputManager input,
         Camera2D camera,
         AssetManager assets
@@ -41,19 +48,27 @@ public class WorldScene : Scene
     {
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
-        _renderer = renderer;   
+        _renderer = renderer;
+        _entityRenderer = new EntityRenderer(spriteBatch);
         _input = input;
         _camera = camera;
-        _assets = assets;
+        _assets = assets;        
         _tileRenderer = new TileRenderer(spriteBatch);
     }
 
     public override void Load()
     {
-        _pixel = new Texture2D(_graphicsDevice, 1, 1);
-        _pixel.SetData(new[] { Color.White });
-        _playerTexture = 
+
+
+        _player = new SpriteEntity();
+
+        _player.Texture = 
             _assets.LoadTexture("Textures/player");
+
+
+        _player.Transform.Position =
+            new Vector2(100, 100);
+
         _tileSetTexture =
             _assets.LoadTexture("Textures/tileset");
         _tileSet = new TileSet(_tileSetTexture);
@@ -67,6 +82,8 @@ public class WorldScene : Scene
             1,
             new Rectangle(32,0,32,32)
         );
+
+        
 
 
         _map = new TileMap(32, 32, 32);
@@ -89,18 +106,18 @@ public class WorldScene : Scene
         float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         if (_input.Left())
-            _position.X -= speed * delta;
+            _player.Transform.Position.X -= speed * delta;
 
         if (_input.Right())
-            _position.X += speed * delta;
+            _player.Transform.Position.X += speed * delta;
 
         if (_input.Up())
-            _position.Y -= speed * delta;
+            _player.Transform.Position.Y -= speed * delta;
 
         if (_input.Down())
-            _position.Y += speed * delta;
+            _player.Transform.Position.Y += speed * delta;
 
-        _camera.Position = _position - new Vector2(640, 360);
+        _camera.Position = _player.Transform.Position - new Vector2(640, 360);
     }
 
     public override void Draw(GameTime gameTime)
@@ -111,12 +128,9 @@ public class WorldScene : Scene
 
         _tileRenderer.Draw(_map, _tileSet);
 
-
-        _renderer.Draw(
-            _playerTexture,
-            _position,
-            new Vector2(32,32),
-            Color.White
+        _entityRenderer.Draw(
+            _player,
+            new Vector2(32, 32)
         );
 
         _spriteBatch.End();
