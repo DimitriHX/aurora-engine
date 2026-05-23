@@ -1,4 +1,5 @@
 ﻿using Aurora.Engine.Entities;
+using Aurora.Engine.Components;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -26,9 +27,17 @@ public class EntityRenderer
             (int)size.Y
         );
 
+        AnimationComponent? animation =
+            entity.GetComponent<AnimationComponent>();
+
+        Rectangle? source =
+            animation?.SourceRectangle;
+
+
         _spriteBatch.Draw(
             entity.Texture,
             destination,
+            source,
             Color.White
         );
     }

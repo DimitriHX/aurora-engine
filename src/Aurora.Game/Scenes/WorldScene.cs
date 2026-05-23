@@ -36,6 +36,7 @@ public class WorldScene : Scene
     private SpriteEntity _player = null!;
     private EntityRenderer _entityRenderer = null!;
     private MovementSystem _movementSystem = null!;
+    private AnimationSystem _animationSystem = null!;
 
     private CollisionSystem _collisionSystem = null!;
     private Vector2 _position = new(100, 100);
@@ -59,6 +60,7 @@ public class WorldScene : Scene
         _collisionSystem = new CollisionSystem();
         _movementSystem =
             new MovementSystem(_collisionSystem);
+        _animationSystem = new AnimationSystem();
         _entityRenderer = new EntityRenderer(spriteBatch);
         _tileRenderer = new TileRenderer(spriteBatch);
     }
@@ -76,6 +78,15 @@ public class WorldScene : Scene
 
         MovementComponent movement = new();
         _player.AddComponent(movement);
+
+        AnimationComponent animation = new()
+        {
+            FrameWidth = 32,
+            FrameHeight = 32,
+            FrameCount = 2
+        };
+
+        _player.AddComponent(animation);
 
 
         _tileSetTexture =
@@ -150,6 +161,11 @@ public class WorldScene : Scene
         _movementSystem.Update(
                 _player,
                 _map,
+                gameTime
+            );
+
+        _animationSystem.Update(
+                _player,
                 gameTime
             );
 

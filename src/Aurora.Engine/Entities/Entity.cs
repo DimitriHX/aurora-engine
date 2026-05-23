@@ -16,8 +16,7 @@ public class Entity
     public T? GetComponent<T>()
         where T : class
     {
-        return _components
-            .TryGetValue(typeof(T), out object? component)
+        return _components.TryGetValue(typeof(T), out object? component)
             ? component as T
             : null;
     }

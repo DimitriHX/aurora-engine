@@ -31,6 +31,8 @@
     <ProjectReference Include="..\Aurora.Core\Aurora.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-  <MonoGameContentReference Include="Content\Content.mgcb" />
+  <MonoGameContentReference Include="Content\Content.mgcb">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </MonoGameContentReference>
   </ItemGroup>
 </Project>
