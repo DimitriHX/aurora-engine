@@ -9,6 +9,8 @@ using Aurora.Engine.Assets;
 using Aurora.Engine.Entities;
 using System;
 using Aurora.Engine.Physics;
+using Aurora.Engine.Components;
+using Aurora.Engine.Systems;
 
 namespace Aurora.Game.Scenes;
 
@@ -33,6 +35,7 @@ public class WorldScene : Scene
     // jugador xd
     private SpriteEntity _player = null!;
     private EntityRenderer _entityRenderer = null!;
+    private MovementSystem _movementSystem = null!;
 
     private CollisionSystem _collisionSystem = null!;
     private Vector2 _position = new(100, 100);
@@ -50,23 +53,30 @@ public class WorldScene : Scene
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
         _renderer = renderer;
-        _entityRenderer = new EntityRenderer(spriteBatch);
         _input = input;
         _camera = camera;
-        _assets = assets;        
+        _assets = assets;
         _collisionSystem = new CollisionSystem();
+        _movementSystem =
+            new MovementSystem(_collisionSystem);
+        _entityRenderer = new EntityRenderer(spriteBatch);
         _tileRenderer = new TileRenderer(spriteBatch);
     }
 
     public override void Load()
     {
         _player = new SpriteEntity();
-        _player.BoundingBox.Width = 32;
-        _player.BoundingBox.Height = 32;
         _player.Texture = 
             _assets.LoadTexture("Textures/player");
         _player.Transform.Position =
             new Vector2(128, 128);
+
+        _player.BoundingBox.Width = 32;
+        _player.BoundingBox.Height = 32;
+
+        MovementComponent movement = new();
+        _player.AddComponent(movement);
+
 
         _tileSetTexture =
             _assets.LoadTexture("Textures/tileset");
@@ -109,41 +119,43 @@ public class WorldScene : Scene
                     
             }
         }
-
-
     }
 
     public override void Update(GameTime gameTime)
     {
-        Vector2 newPosition =
-            _player.Transform.Position;
+        
+        MovementComponent? movement =
+            _player.GetComponent<MovementComponent>();
 
-        float speed = 200f;
-        float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        if (movement == null)
+            return;
+
+        movement.Velocity = Vector2.Zero;
 
         if (_input.Left())
-            newPosition.X -= speed * delta;
+            movement.Velocity.X = -1;
 
         if (_input.Right())
-            newPosition.X += speed * delta;
+            movement.Velocity.X = 1;
 
         if (_input.Up())
-            newPosition.Y -= speed * delta;
+            movement.Velocity.Y = -1;
 
         if (_input.Down())
-            newPosition.Y += speed * delta;
+            movement.Velocity.Y = 1;
 
-        if (_collisionSystem.CanMove(
-            _map,
-            _player,
-            newPosition
-            ))
-        {
-            _player.Transform.Position = 
-                newPosition;
-        }
+        if (movement.Velocity != Vector2.Zero)
+            movement.Velocity.Normalize();
 
-        _camera.Position = _player.Transform.Position - new Vector2(640, 360);
+        _movementSystem.Update(
+                _player,
+                _map,
+                gameTime
+            );
+
+        _camera.Position = 
+            _player.Transform.Position -
+            new Vector2(640, 360);
     }
 
     public override void Draw(GameTime gameTime)
