@@ -8,6 +8,7 @@ using Aurora.Engine.Tilemaps;
 using Aurora.Engine.Assets;
 using Aurora.Engine.Entities;
 using System;
+using Aurora.Engine.Physics;
 
 namespace Aurora.Game.Scenes;
 
@@ -25,7 +26,6 @@ public class WorldScene : Scene
     private TileSet _tileSet = null!;
     private Texture2D _tileSetTexture = null!;
 
-
     private Texture2D _playerTexture = null;
     private Texture2D _pixel = null!;
     private AssetManager _assets = null!;
@@ -34,6 +34,7 @@ public class WorldScene : Scene
     private SpriteEntity _player = null!;
     private EntityRenderer _entityRenderer = null!;
 
+    private CollisionSystem _collisionSystem = null!;
     private Vector2 _position = new(100, 100);
 
     public WorldScene(
@@ -53,69 +54,94 @@ public class WorldScene : Scene
         _input = input;
         _camera = camera;
         _assets = assets;        
+        _collisionSystem = new CollisionSystem();
         _tileRenderer = new TileRenderer(spriteBatch);
     }
 
     public override void Load()
     {
-
-
         _player = new SpriteEntity();
-
+        _player.BoundingBox.Width = 32;
+        _player.BoundingBox.Height = 32;
         _player.Texture = 
             _assets.LoadTexture("Textures/player");
-
-
         _player.Transform.Position =
-            new Vector2(100, 100);
+            new Vector2(128, 128);
 
         _tileSetTexture =
             _assets.LoadTexture("Textures/tileset");
         _tileSet = new TileSet(_tileSetTexture);
-
         _tileSet.RegisterTile(
             0,
             new Rectangle(0, 0, 32, 32)
         );
-
         _tileSet.RegisterTile(
             1,
             new Rectangle(32,0,32,32)
         );
 
-        
-
-
         _map = new TileMap(32, 32, 32);
-
         for (int y = 0; y < _map.Height; y++)
         {
             for (int x = 0; x < _map.Height; x++)
             {
-                if (y < 10)
+                bool border =
+                    x == 0 ||
+                    y == 0 ||
+                    x == _map.Width - 1 ||
+                    y == _map.Height - 1;
+
+
+                if (border) 
+                {
                     _map.SetTile(x, y, 1);
+
+                    _map.SetCollision(x, y, true);
+
+                }
+                    
                 else
+                {
                     _map.SetTile(x, y, 0);
+
+                    _map.SetCollision(x,y,false);
+                }
+                    
             }
         }
+
+
     }
 
     public override void Update(GameTime gameTime)
     {
+        Vector2 newPosition =
+            _player.Transform.Position;
+
         float speed = 200f;
         float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         if (_input.Left())
-            _player.Transform.Position.X -= speed * delta;
+            newPosition.X -= speed * delta;
 
         if (_input.Right())
-            _player.Transform.Position.X += speed * delta;
+            newPosition.X += speed * delta;
 
         if (_input.Up())
-            _player.Transform.Position.Y -= speed * delta;
+            newPosition.Y -= speed * delta;
 
         if (_input.Down())
-            _player.Transform.Position.Y += speed * delta;
+            newPosition.Y += speed * delta;
+
+        if (_collisionSystem.CanMove(
+            _map,
+            _player,
+            newPosition
+            ))
+        {
+            _player.Transform.Position = 
+                newPosition;
+        }
 
         _camera.Position = _player.Transform.Position - new Vector2(640, 360);
     }
