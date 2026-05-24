@@ -1,16 +1,17 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Aurora.Engine.Rendering;
-using Aurora.Engine.Input;
-using Aurora.Engine.Camera;
-using Aurora.Engine.Scenes;
-using Aurora.Engine.Tilemaps;
+﻿using System;
+using System.Diagnostics;
 using Aurora.Engine.Assets;
-using Aurora.Engine.Entities;
-using System;
-using Aurora.Engine.Physics;
+using Aurora.Engine.Camera;
 using Aurora.Engine.Components;
+using Aurora.Engine.Entities;
+using Aurora.Engine.Input;
+using Aurora.Engine.Physics;
+using Aurora.Engine.Rendering;
+using Aurora.Engine.Scenes;
 using Aurora.Engine.Systems;
+using Aurora.Engine.Tilemaps;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Aurora.Game.Scenes;
 
@@ -98,6 +99,13 @@ public class WorldScene : Scene
             FrameCount = 2
         };
 
+        animation.SourceRectangle = new Rectangle(
+            0,
+            0,
+            animation.FrameWidth,
+            animation.FrameHeight
+            );
+
         _player.AddComponent(animation);
 
         // Cargamos el tile set
@@ -157,44 +165,57 @@ public class WorldScene : Scene
             return;
 
         // asignamos la velocidad estandar de movimiento
-        movement.Velocity = Vector2.Zero;
+        
 
         AnimationComponent? animation =
             _player.GetComponent<AnimationComponent>();
 
-        if (animation == null)
-            return;
+        movement.Velocity = Vector2.Zero;
 
-        if (_input.Left())
+        if (_input.Left()) 
+        {
             movement.Velocity.X = -1;
-         
+
             animation.Direction =
                Direction.Left;
+        }
+            
 
-        if (_input.Right())
+        if (_input.Right()) 
+        {
             movement.Velocity.X = 1;
 
             animation.Direction =
                Direction.Right;
+        }
+            
 
         if (_input.Up())
+        {
             movement.Velocity.Y = -1;
 
             animation.Direction =
-                Direction.Right;
+                Direction.Up;
+        }
+            
 
-        if (_input.Down())
+        if (_input.Down()) 
+        {
             movement.Velocity.Y = 1;
 
             animation.Direction =
                 Direction.Down;
+        }
+            
 
         if (movement.Velocity != Vector2.Zero)
+        {
             movement.Velocity.Normalize();
+        }
 
         animation.isMoving =
-            movement.Velocity != Vector2.Zero;
-
+            movement.Velocity.LengthSquared() > 0;
+        //Debug.WriteLine(movement.Velocity);
         _movementSystem.Update(
                 _player,
                 _map,
@@ -210,6 +231,7 @@ public class WorldScene : Scene
         _camera.Position = 
             _player.Transform.Position -
             new Vector2(640, 360);
+
     }
 
     // metodo de dibujado de las entidades y los tiles

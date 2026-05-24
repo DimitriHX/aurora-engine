@@ -9,25 +9,34 @@ public class AnimationSystem
 {   
     public void Update(
             Entity entity,
-            GameTime gameTime
-
+            GameTime gameTime          
         )
-
     {
-        
-        AnimationComponent? animation = 
-            entity.GetComponent<AnimationComponent>();
-        
+        AnimationComponent? animation =
+        entity.GetComponent<AnimationComponent>();
+
         if ( animation == null ) 
             return;
+
+        int row = animation.Direction switch
+        {
+            Direction.Down => 0,
+            Direction.Left => 1,
+            Direction.Right => 2,
+            Direction.Up => 3,
+            _ => 0
+        };
+        //System.Diagnostics.Debug.WriteLine($"Estado: {(animation.isMoving ? "CAMINANDO" : "IDLE")} | Dir: {animation.Direction} | Row: {row}");
+
+
 
         if (!animation.isMoving)
         {
             animation.CurrentFrame = 0;
             return;
         }
-
-        animation.Timer += 
+        else
+            animation.Timer +=
             (float)gameTime.ElapsedGameTime.TotalSeconds;
 
 
@@ -37,31 +46,21 @@ public class AnimationSystem
 
             animation.CurrentFrame++;
 
-            if( animation.CurrentFrame >= animation.FrameCount )
+            if (animation.CurrentFrame >= animation.FrameCount)
                 animation.CurrentFrame = 0;
         }
 
-        int row = animation.Direction switch
-        {
-            Direction.Down => 0,
-            Direction.Up => 1,
-            Direction.Left => 2,
-            Direction.Right => 3,
-            _ => 0
-        };
 
         animation.SourceRectangle =
-            new Rectangle(
-                animation.CurrentFrame * 
-                animation.FrameWidth,
-                row *
-                animation.FrameHeight,
-                animation.FrameWidth,
-                animation.FrameHeight
+        new Rectangle(
+            animation.CurrentFrame *
+            animation.FrameWidth,
+            row *
+            animation.FrameHeight,
+            animation.FrameWidth,
+            animation.FrameHeight
+        );
 
-            );
-
-       
     }
 
 }
