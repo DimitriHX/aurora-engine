@@ -159,20 +159,41 @@ public class WorldScene : Scene
         // asignamos la velocidad estandar de movimiento
         movement.Velocity = Vector2.Zero;
 
+        AnimationComponent? animation =
+            _player.GetComponent<AnimationComponent>();
+
+        if (animation == null)
+            return;
+
         if (_input.Left())
             movement.Velocity.X = -1;
+         
+            animation.Direction =
+               Direction.Left;
 
         if (_input.Right())
             movement.Velocity.X = 1;
 
+            animation.Direction =
+               Direction.Right;
+
         if (_input.Up())
             movement.Velocity.Y = -1;
+
+            animation.Direction =
+                Direction.Right;
 
         if (_input.Down())
             movement.Velocity.Y = 1;
 
+            animation.Direction =
+                Direction.Down;
+
         if (movement.Velocity != Vector2.Zero)
             movement.Velocity.Normalize();
+
+        animation.isMoving =
+            movement.Velocity != Vector2.Zero;
 
         _movementSystem.Update(
                 _player,
