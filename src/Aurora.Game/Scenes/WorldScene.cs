@@ -16,31 +16,38 @@ namespace Aurora.Game.Scenes;
 
 public class WorldScene : Scene
 {
+    // Declaraciones
+    // Motor principal
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
 
+    // Render de texturas
     private readonly TextureRenderer _renderer;
     private readonly InputManager _input;
     private readonly Camera2D _camera;
 
+    // Render los TileSet
     private TileMap _map = null!;
     private TileRenderer _tileRenderer = null!;
     private TileSet _tileSet = null!;
     private Texture2D _tileSetTexture = null!;
 
+    // Asignamos la textura 2D
     private Texture2D _playerTexture = null;
     private Texture2D _pixel = null!;
     private AssetManager _assets = null!;
 
-    // jugador xd
+    // jugador xd, xd 
     private SpriteEntity _player = null!;
     private EntityRenderer _entityRenderer = null!;
     private MovementSystem _movementSystem = null!;
     private AnimationSystem _animationSystem = null!;
 
+    // Asignamos el sistema de colision
     private CollisionSystem _collisionSystem = null!;
     private Vector2 _position = new(100, 100);
 
+    // Constructor de la escena del mundo inicial -- en desarrollo 
     public WorldScene(
         GraphicsDevice graphicsDevice,
         SpriteBatch spriteBatch,
@@ -51,12 +58,15 @@ public class WorldScene : Scene
         AssetManager assets
         )
     {
+        // importante el orden de las asignaciones 
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
         _renderer = renderer;
         _input = input;
         _camera = camera;
         _assets = assets;
+        // poner siempre el sistema de colision primero en caso de errores de carga
+        // de modelos 
         _collisionSystem = new CollisionSystem();
         _movementSystem =
             new MovementSystem(_collisionSystem);
@@ -64,10 +74,12 @@ public class WorldScene : Scene
         _entityRenderer = new EntityRenderer(spriteBatch);
         _tileRenderer = new TileRenderer(spriteBatch);
     }
-
+    
+    // metodo principal de carga 
     public override void Load()
     {
         _player = new SpriteEntity();
+        // cargamos la textura al personaje 
         _player.Texture = 
             _assets.LoadTexture("Textures/player");
         _player.Transform.Position =
@@ -88,7 +100,7 @@ public class WorldScene : Scene
 
         _player.AddComponent(animation);
 
-
+        // Cargamos el tile set
         _tileSetTexture =
             _assets.LoadTexture("Textures/tileset");
         _tileSet = new TileSet(_tileSetTexture);
@@ -101,10 +113,11 @@ public class WorldScene : Scene
             new Rectangle(32,0,32,32)
         );
 
+        // Asignamos el tilemap a la memoria
         _map = new TileMap(32, 32, 32);
         for (int y = 0; y < _map.Height; y++)
         {
-            for (int x = 0; x < _map.Height; x++)
+            for (int x = 0; x < _map.Width; x++)
             {
                 bool border =
                     x == 0 ||
@@ -132,15 +145,18 @@ public class WorldScene : Scene
         }
     }
 
+    // metodo de actualizacion para el movimiento
     public override void Update(GameTime gameTime)
     {
-        
+        // creamos el nuevo componente de movimiento
         MovementComponent? movement =
             _player.GetComponent<MovementComponent>();
 
+        // si no se mueve por si acaso
         if (movement == null)
             return;
 
+        // asignamos la velocidad estandar de movimiento
         movement.Velocity = Vector2.Zero;
 
         if (_input.Left())
@@ -169,19 +185,25 @@ public class WorldScene : Scene
                 gameTime
             );
 
+        // juntamos la camara a el personaje 
         _camera.Position = 
             _player.Transform.Position -
             new Vector2(640, 360);
     }
 
+    // metodo de dibujado de las entidades y los tiles
     public override void Draw(GameTime gameTime)
     {
+        
         _spriteBatch.Begin(
+            // fix, de las lineas del grip de tilemap 
             samplerState: SamplerState.PointClamp,
             transformMatrix: _camera.Transform);
 
+        // cargamos el render de el tile 
         _tileRenderer.Draw(_map, _tileSet);
 
+        // cargamos el render de la entidad
         _entityRenderer.Draw(
             _player,
             new Vector2(32, 32)

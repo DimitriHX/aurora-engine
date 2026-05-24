@@ -10,6 +10,7 @@ using Aurora.Engine.Assets;
 
 namespace Aurora.Game;
 
+// debido a problemas de compatibilidad asignar la ruta completa de tip Game
 public class GameRoot : Microsoft.Xna.Framework.Game
 {
     private readonly GraphicsDeviceManager _graphics;
