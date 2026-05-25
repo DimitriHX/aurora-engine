@@ -35,4 +35,7 @@
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>
   </MonoGameContentReference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\TileSets\" />
+  </ItemGroup>
 </Project>

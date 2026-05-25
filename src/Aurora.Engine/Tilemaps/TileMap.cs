@@ -5,7 +5,7 @@ public class TileMap
     public int Width { get; }
     public int Height { get; }
     public int TileSize { get; }
-    public List<TileLayer> Layers { get; } = [];
+    public List<TileLayer> Layers { get; } = new List<TileLayer>();
 
    
 
@@ -40,5 +40,13 @@ public class TileMap
         bool solid)
     {
         _collisions[y * Width + x] = solid;
+    }
+
+    public TileLayer? GetLayer(
+        string name)
+    {
+        return Layers.FirstOrDefault(
+            l => l != null && 
+                l.Name == name);
     }
 }

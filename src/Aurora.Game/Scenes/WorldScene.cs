@@ -9,6 +9,7 @@ using Aurora.Engine.Input;
 using Aurora.Engine.Physics;
 using Aurora.Engine.Rendering;
 using Aurora.Engine.Scenes;
+using Aurora.Engine.Serialization;
 using Aurora.Engine.Systems;
 using Aurora.Engine.Tilemaps;
 using Microsoft.Xna.Framework;
@@ -130,44 +131,33 @@ public class WorldScene : Scene
             1,
             new Rectangle(32, 0, 32, 32)
         );
-   
+
 
         // Generamos el mapa si si si
-        _map = new TileMap(32, 32, 32);
+        MapLoader loader = new();
+        _map = loader.Load(
+                "Content/Maps/test_map.json"
+            );
+        Debug.WriteLine(_map);
         // capas como cebollas / layers
         _baseLayer =
-            new(
-                "Base",
-                _map.Width,
-                _map.Height
-                );
+            _map.GetLayer("Base");
 
         _groundLayer =
-            new(
-                "Ground",
-                _map.Width,
-                _map.Height
-                );
+            _map.GetLayer("Ground");
 
         _objectLayer =
-            new(
-                "Object",
-                _map.Width,
-                _map.Height
-                );
+            _map.GetLayer("Object");
         _topLayer =
-            new(
-                "Top",
-                _map.Width,
-                _map.Height
-                );
+            _map.GetLayer("Top");
         
         _map.AddLayer( _groundLayer );
         _map.AddLayer( _objectLayer );
         _map.AddLayer( _topLayer );
         _map.AddLayer( _baseLayer);
 
-        
+        TileLayer collisionLayer =
+            _map.GetLayer("Collision");
         
 
 
@@ -175,31 +165,20 @@ public class WorldScene : Scene
         {
             for (int x = 0; x < _map.Width; x++)
             {
-                _baseLayer.SetTile(x, y, 1);
-                bool border =
-                    x == 0 ||
-                    y == 0 ||
-                    x == _map.Width - 1 ||
-                    y == _map.Height - 1;
-
-
-                if (border) 
+                int tile =
+                    collisionLayer.GetTiles(x, y);
+                if(tile > 0)
                 {
-                    _groundLayer.SetTile(x, y, 1);
-
-                    _map.SetCollision(x, y, true);
-
-                }
-                    
-                else
-                {
-                    _groundLayer.SetTile(x, y, 0);
-
-                    _map.SetCollision(x,y,false);
+                    _map.SetCollision(
+                        x,
+                        y,
+                        true
+                        );
                 }
                     
             }
         }
+        
     }
 
     // metodo de actualizacion para el movimiento

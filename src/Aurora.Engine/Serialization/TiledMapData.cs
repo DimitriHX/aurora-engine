@@ -2,7 +2,7 @@
 
 namespace Aurora.Engine.Serialization;
 
-public class TileMapData
+public class TiledMapData
 {
     [JsonPropertyName("width")]
     public int Width { get; set; }
@@ -18,12 +18,14 @@ public class TileMapData
 
     [JsonPropertyName("layers")]
     public List<TiledLayerData> Layers { get; set; } = [];
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "";
 }
 
 public class TiledLayerData
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = "";
 
     [JsonPropertyName("data")]
     public List<int> Data { get; set; } = [];
