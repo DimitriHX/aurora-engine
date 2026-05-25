@@ -41,4 +41,20 @@ public class EntityRenderer
             Color.White
         );
     }
+
+    public void Draw(
+        IEnumerable<SpriteEntity> entities,
+        Vector2 size 
+        )
+    {
+        IEnumerable<SpriteEntity> sorted =
+            entities
+                .OrderBy(e => e.RenderLayer)
+                .ThenBy(e => e.Depth);
+
+        foreach (SpriteEntity entity in sorted)
+        {
+            Draw( entity, size );   
+        }
+    }
 }

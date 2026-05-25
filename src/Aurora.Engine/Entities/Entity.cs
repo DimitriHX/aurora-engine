@@ -1,9 +1,14 @@
-﻿namespace Aurora.Engine.Entities;
+﻿using Aurora.Engine.Rendering;
+
+namespace Aurora.Engine.Entities;
 
 public class Entity
 {
     public Transform Transform { get; } = new();
     public BoundingBox BoundingBox { get; set; } = new();
+
+    public RenderLayer RenderLayer = RenderLayer.Entities;
+    public float Depth => Transform.Position.Y;
 
     private readonly Dictionary<Type, object> _components = new();
 
@@ -20,5 +25,7 @@ public class Entity
             ? component as T
             : null;
     }
+
+   
         
 }

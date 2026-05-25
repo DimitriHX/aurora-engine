@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Aurora.Engine.Assets;
 using Aurora.Engine.Camera;
@@ -43,6 +44,7 @@ public class WorldScene : Scene
     private EntityRenderer _entityRenderer = null!;
     private MovementSystem _movementSystem = null!;
     private AnimationSystem _animationSystem = null!;
+    private readonly List<SpriteEntity> _entities = [];
 
     // Asignamos el sistema de colision
     private CollisionSystem _collisionSystem = null!;
@@ -80,6 +82,7 @@ public class WorldScene : Scene
     public override void Load()
     {
         _player = new SpriteEntity();
+        _entities.Add(_player);
         // cargamos la textura al personaje 
         _player.Texture = 
             _assets.LoadTexture("Textures/player");
@@ -246,11 +249,11 @@ public class WorldScene : Scene
         // cargamos el render de el tile 
         _tileRenderer.Draw(_map, _tileSet);
 
-        // cargamos el render de la entidad
+        // Cargamos el render el personaje 
         _entityRenderer.Draw(
-            _player,
-            new Vector2(32, 32)
-        );
+            _entities,
+            new Vector2(32,32)
+            );
 
         _spriteBatch.End();
 
