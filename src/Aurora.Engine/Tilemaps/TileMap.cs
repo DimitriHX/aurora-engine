@@ -5,7 +5,9 @@ public class TileMap
     public int Width { get; }
     public int Height { get; }
     public int TileSize { get; }
-    public int[] Tiles { get; }
+    public List<TileLayer> Layers { get; } = [];
+
+   
 
     public readonly bool[] _collisions;
     public TileMap(
@@ -17,19 +19,11 @@ public class TileMap
         Width = width;
         Height = height;
         TileSize = tileSize;
-
-        Tiles = new int[width * height];
         _collisions = new bool[width * height];
     }
-
-    public int GetTile(int x, int y)
+    public void AddLayer(TileLayer layer)
     {
-        return Tiles[y * Width + x];
-    }
-
-    public void SetTile(int x, int y, int value)
-    {
-        Tiles[y * Width + x] = value;
+        Layers.Add(layer);
     }
 
     public bool IsSolid(int x, int y)

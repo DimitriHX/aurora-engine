@@ -50,6 +50,10 @@ public class WorldScene : Scene
     private CollisionSystem _collisionSystem = null!;
     private Vector2 _position = new(100, 100);
 
+    private TileLayer _groundLayer = null!;
+    private TileLayer _objectLayer = null!;
+    private TileLayer _topLayer = null!;
+
     // Constructor de la escena del mundo inicial -- en desarrollo 
     public WorldScene(
         GraphicsDevice graphicsDevice,
@@ -81,6 +85,7 @@ public class WorldScene : Scene
     // metodo principal de carga 
     public override void Load()
     {
+        // player
         _player = new SpriteEntity();
         _entities.Add(_player);
         // cargamos la textura al personaje 
@@ -88,7 +93,7 @@ public class WorldScene : Scene
             _assets.LoadTexture("Textures/player");
         _player.Transform.Position =
             new Vector2(128, 128);
-
+        // colisiones de player
         _player.BoundingBox.Width = 32;
         _player.BoundingBox.Height = 32;
 
@@ -115,17 +120,48 @@ public class WorldScene : Scene
         _tileSetTexture =
             _assets.LoadTexture("Textures/tileset");
         _tileSet = new TileSet(_tileSetTexture);
+
         _tileSet.RegisterTile(
             0,
             new Rectangle(0, 0, 32, 32)
         );
         _tileSet.RegisterTile(
             1,
-            new Rectangle(32,0,32,32)
+            new Rectangle(32, 0, 32, 32)
         );
+        _tileSet.RegisterTile(
+            2,
+            new Rectangle(64, 0, 32, 32)
+            );
 
-        // Asignamos el tilemap a la memoria
+        // Generamos el mapa si si si
         _map = new TileMap(32, 32, 32);
+        // capas como cebollas / layers
+        _groundLayer =
+            new(
+                "Ground",
+                _map.Width,
+                _map.Height
+                );
+
+        _objectLayer =
+            new(
+                "Object",
+                _map.Width,
+                _map.Height
+                );
+        _topLayer =
+            new(
+                "Top",
+                _map.Width,
+                _map.Height
+                );
+        
+        _map.AddLayer( _groundLayer );
+        _map.AddLayer( _objectLayer );
+        _map.AddLayer( _topLayer );
+
+        
         for (int y = 0; y < _map.Height; y++)
         {
             for (int x = 0; x < _map.Width; x++)
@@ -139,7 +175,7 @@ public class WorldScene : Scene
 
                 if (border) 
                 {
-                    _map.SetTile(x, y, 1);
+                    _groundLayer.SetTile(x, y, 1);
 
                     _map.SetCollision(x, y, true);
 
@@ -147,7 +183,7 @@ public class WorldScene : Scene
                     
                 else
                 {
-                    _map.SetTile(x, y, 0);
+                    _groundLayer.SetTile(x, y, 0);
 
                     _map.SetCollision(x,y,false);
                 }
@@ -240,21 +276,35 @@ public class WorldScene : Scene
     // metodo de dibujado de las entidades y los tiles
     public override void Draw(GameTime gameTime)
     {
-        
         _spriteBatch.Begin(
             // fix, de las lineas del grip de tilemap 
             samplerState: SamplerState.PointClamp,
             transformMatrix: _camera.Transform);
-
         // cargamos el render de el tile 
-        _tileRenderer.Draw(_map, _tileSet);
+        _tileRenderer.DrawLayer(
+            _map,
+            _groundLayer,
+            _tileSet            
+            );
+        _tileRenderer.DrawLayer(
+            _map,
+            _objectLayer,
+            _tileSet
+            );
 
         // Cargamos el render el personaje 
         _entityRenderer.Draw(
             _entities,
-            new Vector2(32,32)
+            new Vector2(32, 32)
             );
 
+        //_tileRenderer.DrawLayer(
+        //    _map,
+        //    _topLayer,
+        //    _tileSet
+        //    );
+
+        
         _spriteBatch.End();
 
     }

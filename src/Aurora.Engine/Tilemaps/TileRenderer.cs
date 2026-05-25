@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Diagnostics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Aurora.Engine.Tilemaps;
@@ -12,8 +13,40 @@ public class TileRenderer
         _spriteBatch = spriteBatch;
     }
 
-    public void Draw(
+    //public void Draw(
+    //    TileMap map,
+    //    TileSet tileSet
+    //    )
+    //{
+    //    for (int y = 0; y < map.Height; y++)
+    //    {
+    //        for (int x = 0; x < map.Width; x++)
+    //        {
+    //            int tileId = map.GetTile(x, y);
+
+    //            Rectangle source =
+    //                tileSet.GetSourceRectangle(tileId);
+
+    //            Rectangle destination = new(
+    //                x * map.TileSize,
+    //                y * map.TileSize,
+    //                map.TileSize,
+    //                map.TileSize
+    //            );
+    //            _spriteBatch.Draw(
+    //                tileSet.Texture,
+    //                destination,
+    //                source,
+    //                Color.White
+    //            );
+    //        }
+    //    }
+    //}
+
+    
+    public void DrawLayer(
         TileMap map,
+        TileLayer layer,
         TileSet tileSet
         )
     {
@@ -21,23 +54,35 @@ public class TileRenderer
         {
             for (int x = 0; x < map.Width; x++)
             {
-                int tileId = map.GetTile(x, y);
+                
+                int index =
+                    x + y * map.Width;
+
+                int tileId =
+                    layer.Tiles[index];
+
+                if (tileId < 0)
+                    continue;
 
                 Rectangle source =
                     tileSet.GetSourceRectangle(tileId);
 
                 Rectangle destination = new(
-                    x * map.TileSize,
-                    y * map.TileSize,
-                    map.TileSize,
-                    map.TileSize
-                );
+                        x * map.TileSize,
+                        y * map.TileSize,
+                        map.TileSize,
+                        map.TileSize
+                    );
+
+                if (source == Rectangle.Empty)
+                    continue;
+
                 _spriteBatch.Draw(
-                    tileSet.Texture,
-                    destination,
-                    source,
-                    Color.White
-                );
+                        tileSet.Texture,
+                        destination,
+                        source,
+                        Color.White
+                    );
             }
         }
     }

@@ -23,6 +23,12 @@ public class TileSet
 
     public Rectangle GetSourceRectangle( int tileId)
     {
-        return _sourceRectangles[tileId];
+        if (_sourceRectangles.TryGetValue(tileId,
+            out Rectangle rectangle))          
+        {
+            return rectangle;
+        }
+
+        return Rectangle.Empty;
     }
 }
