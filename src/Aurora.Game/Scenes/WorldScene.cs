@@ -53,6 +53,7 @@ public class WorldScene : Scene
     private TileLayer _groundLayer = null!;
     private TileLayer _objectLayer = null!;
     private TileLayer _topLayer = null!;
+    private TileLayer _baseLayer = null!;
 
     // Constructor de la escena del mundo inicial -- en desarrollo 
     public WorldScene(
@@ -129,14 +130,18 @@ public class WorldScene : Scene
             1,
             new Rectangle(32, 0, 32, 32)
         );
-        _tileSet.RegisterTile(
-            2,
-            new Rectangle(64, 0, 32, 32)
-            );
+   
 
         // Generamos el mapa si si si
         _map = new TileMap(32, 32, 32);
         // capas como cebollas / layers
+        _baseLayer =
+            new(
+                "Base",
+                _map.Width,
+                _map.Height
+                );
+
         _groundLayer =
             new(
                 "Ground",
@@ -160,12 +165,17 @@ public class WorldScene : Scene
         _map.AddLayer( _groundLayer );
         _map.AddLayer( _objectLayer );
         _map.AddLayer( _topLayer );
+        _map.AddLayer( _baseLayer);
 
         
+        
+
+
         for (int y = 0; y < _map.Height; y++)
         {
             for (int x = 0; x < _map.Width; x++)
             {
+                _baseLayer.SetTile(x, y, 1);
                 bool border =
                     x == 0 ||
                     y == 0 ||
