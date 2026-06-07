@@ -5,6 +5,7 @@ namespace Aurora.Engine.Components;
 public class MovementComponent
 {
     public Vector2 Velocity;
-
-    public float Speed = 200f;
+    public Vector2 TargetPosition;
+    public float Speed = 128f;
+    public bool IsMoving;
 }

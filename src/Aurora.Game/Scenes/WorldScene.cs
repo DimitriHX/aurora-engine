@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Aurora.Engine.Assets;
 using Aurora.Engine.Camera;
 using Aurora.Engine.Components;
@@ -17,107 +18,81 @@ namespace Aurora.Game.Scenes;
 
 public class WorldScene : Scene
 {
-    // Declaraciones
-    // Motor principal
-    private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
-
-    // Render de texturas
-    private readonly TextureRenderer _renderer;
     private readonly InputManager _input;
     private readonly Camera2D _camera;
-
-    // Render los TileSet
-    private TileMap _map = null!;
-    private TileRenderer _tileRenderer = null!;
-    private TileMapResource _tileMapResource = null!;
-    private TileMapManager _tileMapManager = null!;
-
-    // Asignamos la textura 2D
-    private Texture2D _playerTexture = null;
-    private Texture2D _pixel = null!;
-    private AssetManager _assets = null!;
-
-    // jugador xd, xd 
-    private SpriteEntity _player = null!;
-    private EntityRenderer _entityRenderer = null!;
-    private MovementSystem _movementSystem = null!;
-    private AnimationSystem _animationSystem = null!;
+    private readonly AssetManager _assets;
+    private readonly TileRenderer _tileRenderer;
+    private readonly EntityRenderer _entityRenderer;
+    private readonly MovementSystem _movementSystem;
+    private readonly AnimationSystem _animationSystem;
     private readonly List<SpriteEntity> _entities = [];
 
-    // Asignamos el sistema de colision
-    private CollisionSystem _collisionSystem = null!;
-    private Vector2 _position = new(100, 100);
-
+    private TileMapResource _world = null!;
+    private TileMap _map = null!;
+    private SpriteEntity _player = null!;
     private TileLayer _groundLayer = null!;
     private TileLayer _objectLayer = null!;
     private TileLayer _topLayer = null!;
     private TileLayer _baseLayer = null!;
 
-    // Constructor de la escena del mundo inicial -- en desarrollo 
     public WorldScene(
-        GraphicsDevice graphicsDevice,
         SpriteBatch spriteBatch,
-        TextureRenderer renderer,
-        EntityRenderer entityRenderer,
         InputManager input,
         Camera2D camera,
-        AssetManager assets
-        )
+        AssetManager assets)
     {
-        // importante el orden de las asignaciones 
-        _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
-        _renderer = renderer;
         _input = input;
         _camera = camera;
         _assets = assets;
-        // poner siempre el sistema de colision primero en caso de errores de carga
-        // de modelos 
-        _collisionSystem = new CollisionSystem();
+
         _movementSystem =
-            new MovementSystem(_collisionSystem);
+            new MovementSystem(new CollisionSystem());
         _animationSystem = new AnimationSystem();
         _entityRenderer = new EntityRenderer(spriteBatch);
         _tileRenderer = new TileRenderer(spriteBatch);
     }
-    
-    // metodo principal de carga 
+
     public override void Load()
     {
-        // player
-        _player = new SpriteEntity();
-        _entities.Add(_player);
-        // cargamos la textura al personaje 
-        _player.Texture = 
-            _assets.LoadTexture("Textures/player");
-        _player.Transform.Position =
-            new Vector2(128, 128);
-        // colisiones de player
-        _player.BoundingBox.Width = 32;
-        _player.BoundingBox.Height = 32;
+        LoadMap();
+        LoadPlayer();
+        CenterCamera();
+    }
 
-        MovementComponent movement = new();
-        _player.AddComponent(movement);
+    public override void Update(GameTime gameTime)
+    {
+        UpdatePlayerMovement(gameTime);
+        _animationSystem.Update(_player, gameTime);
+        CenterCamera();
+    }
 
-        AnimationComponent animation = new()
-        {
-            FrameWidth = 32,
-            FrameHeight = 32,
-            FrameCount = 2
-        };
+    public override void Draw(GameTime gameTime)
+    {
+        _spriteBatch.Begin(
+            samplerState: SamplerState.PointClamp,
+            transformMatrix: _camera.Transform
+        );
 
-        animation.SourceRectangle = new Rectangle(
-            0,
-            0,
-            animation.FrameWidth,
-            animation.FrameHeight
-            );
+        DrawLayer(_baseLayer);
+        DrawLayer(_groundLayer);
+        DrawLayer(_objectLayer);
 
-        _player.AddComponent(animation);
+        _entityRenderer.Draw(
+            _entities,
+            new Vector2(_map.TileSize)
+        );
 
-        _tileMapManager = new TileMapManager(_assets);
-        _tileMapResource = _tileMapManager.Add(
+        DrawLayer(_topLayer);
+        _spriteBatch.End();
+    }
+
+    private void LoadMap()
+    {
+        TileMapManager tileMapManager = new(_assets);
+
+        _world = tileMapManager.Add(
             "world",
             new TileMapDefinition(
                 "Content/Maps/test_map.json",
@@ -131,11 +106,92 @@ public class WorldScene : Scene
             }
         );
 
-        _map = _tileMapResource.Map;
+        _map = _world.Map;
         _baseLayer = GetRequiredLayer("Base");
         _groundLayer = GetRequiredLayer("Ground");
         _objectLayer = GetRequiredLayer("Objects");
         _topLayer = GetRequiredLayer("Top");
+    }
+
+    private void LoadPlayer()
+    {
+        _player = new SpriteEntity
+        {
+            Texture = _assets.LoadTexture("Textures/player")
+        };
+
+        _player.Transform.Position = new Vector2(128, 128);
+        _player.BoundingBox.Width = _map.TileSize;
+        _player.BoundingBox.Height = _map.TileSize;
+        _player.AddComponent(new MovementComponent());
+        _player.AddComponent(
+            new AnimationComponent
+            {
+                FrameWidth = 32,
+                FrameHeight = 32,
+                FrameCount = 2,
+                SourceRectangle = new Rectangle(0, 0, 32, 32)
+            }
+        );
+
+        _entities.Add(_player);
+    }
+
+    private void UpdatePlayerMovement(GameTime gameTime)
+    {
+        MovementComponent movement =
+            GetRequiredComponent<MovementComponent>(_player);
+        AnimationComponent animation =
+            GetRequiredComponent<AnimationComponent>(_player);
+
+        _movementSystem.Update(_player, gameTime);
+
+        if (!movement.IsMoving &&
+            TryGetMovementDirection(out Direction direction))
+        {
+            animation.Direction = direction;
+            _movementSystem.TryStartMove(_player, _map, direction);
+        }
+
+        animation.isMoving = movement.IsMoving;
+    }
+
+    private bool TryGetMovementDirection(out Direction direction)
+    {
+        if (_input.LeftPressed())
+            return SetDirection(Direction.Left, out direction);
+
+        if (_input.RightPressed())
+            return SetDirection(Direction.Right, out direction);
+
+        if (_input.UpPressed())
+            return SetDirection(Direction.Up, out direction);
+
+        if (_input.DownPressed())
+            return SetDirection(Direction.Down, out direction);
+
+        if (_input.Left())
+            return SetDirection(Direction.Left, out direction);
+
+        if (_input.Right())
+            return SetDirection(Direction.Right, out direction);
+
+        if (_input.Up())
+            return SetDirection(Direction.Up, out direction);
+
+        if (_input.Down())
+            return SetDirection(Direction.Down, out direction);
+
+        direction = Direction.Down;
+        return false;
+    }
+
+    private static bool SetDirection(
+        Direction value,
+        out Direction direction)
+    {
+        direction = value;
+        return true;
     }
 
     private TileLayer GetRequiredLayer(string name)
@@ -144,7 +200,7 @@ public class WorldScene : Scene
 
         if (layer == null)
         {
-            throw new System.IO.InvalidDataException(
+            throw new InvalidDataException(
                 $"Required tilemap layer '{name}' was not found."
             );
         }
@@ -152,121 +208,30 @@ public class WorldScene : Scene
         return layer;
     }
 
-    // metodo de actualizacion para el movimiento
-    public override void Update(GameTime gameTime)
+    private static T GetRequiredComponent<T>(Entity entity)
+        where T : class
     {
-        // creamos el nuevo componente de movimiento
-        MovementComponent? movement =
-            _player.GetComponent<MovementComponent>();
+        T component = entity.GetComponent<T>();
 
-        // si no se mueve por si acaso
-        if (movement == null)
-            return;
-
-        // asignamos la velocidad estandar de movimiento
-        
-
-        AnimationComponent? animation =
-            _player.GetComponent<AnimationComponent>();
-
-        movement.Velocity = Vector2.Zero;
-
-        if (_input.Left()) 
+        if (component == null)
         {
-            movement.Velocity.X = -1;
-
-            animation.Direction =
-               Direction.Left;
-        }
-            
-
-        if (_input.Right()) 
-        {
-            movement.Velocity.X = 1;
-
-            animation.Direction =
-               Direction.Right;
-        }
-            
-
-        if (_input.Up())
-        {
-            movement.Velocity.Y = -1;
-
-            animation.Direction =
-                Direction.Up;
-        }
-            
-
-        if (_input.Down()) 
-        {
-            movement.Velocity.Y = 1;
-
-            animation.Direction =
-                Direction.Down;
-        }
-            
-
-        if (movement.Velocity != Vector2.Zero)
-        {
-            movement.Velocity.Normalize();
-        }
-
-        animation.isMoving =
-            movement.Velocity.LengthSquared() > 0;
-        //Debug.WriteLine(movement.Velocity);
-        _movementSystem.Update(
-                _player,
-                _map,
-                gameTime
+            throw new InvalidOperationException(
+                $"Entity requires component '{typeof(T).Name}'."
             );
+        }
 
-        _animationSystem.Update(
-                _player,
-                gameTime
-            );
-
-        // juntamos la camara a el personaje 
-        _camera.Position = 
-            _player.Transform.Position -
-            new Vector2(640, 360);
-
+        return component;
     }
 
-    // metodo de dibujado de las entidades y los tiles
-    public override void Draw(GameTime gameTime)
+    private void DrawLayer(TileLayer layer)
     {
-        _spriteBatch.Begin(
-            // fix, de las lineas del grip de tilemap 
-            samplerState: SamplerState.PointClamp,
-            transformMatrix: _camera.Transform);
-        // cargamos el render de el tile 
-        _tileRenderer.DrawLayer(
-            _tileMapResource,
-            _baseLayer
-        );
-        _tileRenderer.DrawLayer(
-            _tileMapResource,
-            _groundLayer
-        );
-        _tileRenderer.DrawLayer(
-            _tileMapResource,
-            _objectLayer
-        );
+        _tileRenderer.DrawLayer(_world, layer);
+    }
 
-        // Cargamos el render el personaje 
-        _entityRenderer.Draw(
-            _entities,
-            new Vector2(32, 32)
-            );
-
-        _tileRenderer.DrawLayer(
-            _tileMapResource,
-            _topLayer
-        );
-
-        
-        _spriteBatch.End();
-
+    private void CenterCamera()
+    {
+        _camera.Position =
+            _player.Transform.Position -
+            new Vector2(640, 360);
     }
 }

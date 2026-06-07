@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Aurora.Engine.Rendering;
 using Aurora.Engine.Input;
 using Aurora.Engine.Camera;
 using System;
@@ -16,8 +15,6 @@ public class GameRoot : Microsoft.Xna.Framework.Game
     private readonly GraphicsDeviceManager _graphics;
     
     private SpriteBatch _spriteBatch = null;
-    private TextureRenderer _textureRenderer = null;
-    private EntityRenderer _entityRenderer = null;
     private InputManager _input = null;
     private Camera2D _camera = null;
     private SceneManager _sceneManager = null;
@@ -54,16 +51,11 @@ public class GameRoot : Microsoft.Xna.Framework.Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-        _textureRenderer = new TextureRenderer(_spriteBatch);
-
         _assets = new AssetManager(Content);
 
         _sceneManager.ChangeScene(
             new WorldScene(
-                GraphicsDevice,
                 _spriteBatch,
-                _textureRenderer,
-                _entityRenderer,
                 _input,
                 _camera,
                 _assets

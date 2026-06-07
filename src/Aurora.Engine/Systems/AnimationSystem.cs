@@ -1,21 +1,19 @@
-﻿using Microsoft.Xna.Framework;
-
 using Aurora.Engine.Components;
 using Aurora.Engine.Entities;
+using Microsoft.Xna.Framework;
 
 namespace Aurora.Engine.Systems;
 
 public class AnimationSystem
-{   
+{
     public void Update(
-            Entity entity,
-            GameTime gameTime          
-        )
+        Entity entity,
+        GameTime gameTime)
     {
         AnimationComponent? animation =
-        entity.GetComponent<AnimationComponent>();
+            entity.GetComponent<AnimationComponent>();
 
-        if ( animation == null ) 
+        if (animation == null)
             return;
 
         int row = animation.Direction switch
@@ -26,41 +24,32 @@ public class AnimationSystem
             Direction.Up => 3,
             _ => 0
         };
-        //System.Diagnostics.Debug.WriteLine($"Estado: {(animation.isMoving ? "CAMINANDO" : "IDLE")} | Dir: {animation.Direction} | Row: {row}");
-
-
 
         if (!animation.isMoving)
         {
             animation.CurrentFrame = 0;
-            return;
+            animation.Timer = 0f;
         }
         else
-            animation.Timer +=
-            (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-
-        if (animation.Timer >= animation.FrameTime)
         {
-            animation.Timer = 0f;
+            animation.Timer +=
+                (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            animation.CurrentFrame++;
+            if (animation.Timer >= animation.FrameTime)
+            {
+                animation.Timer = 0f;
+                animation.CurrentFrame++;
 
-            if (animation.CurrentFrame >= animation.FrameCount)
-                animation.CurrentFrame = 0;
+                if (animation.CurrentFrame >= animation.FrameCount)
+                    animation.CurrentFrame = 0;
+            }
         }
 
-
-        animation.SourceRectangle =
-        new Rectangle(
-            animation.CurrentFrame *
-            animation.FrameWidth,
-            row *
-            animation.FrameHeight,
+        animation.SourceRectangle = new Rectangle(
+            animation.CurrentFrame * animation.FrameWidth,
+            row * animation.FrameHeight,
             animation.FrameWidth,
             animation.FrameHeight
         );
-
     }
-
 }
