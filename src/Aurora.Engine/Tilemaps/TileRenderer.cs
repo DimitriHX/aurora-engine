@@ -86,4 +86,49 @@ public class TileRenderer
             }
         }
     }
+
+    public void DrawLayer(
+        TileMapResource resource,
+        TileLayer layer)
+    {
+        if (!layer.Visible)
+            return;
+
+        TileMap map = resource.Map;
+
+        for (int y = 0; y < map.Height; y++)
+        {
+            for (int x = 0; x < map.Width; x++)
+            {
+                int index = x + y * map.Width;
+                int tileId = layer.Tiles[index];
+
+                if (tileId < 0 ||
+                    !resource.TryResolveTile(tileId, out TileSet? tileSet))
+                {
+                    continue;
+                }
+
+                Rectangle source =
+                    tileSet!.GetGlobalSourceRectangle(tileId);
+
+                if (source == Rectangle.Empty)
+                    continue;
+
+                Rectangle destination = new(
+                    x * map.TileSize,
+                    y * map.TileSize,
+                    map.TileSize,
+                    map.TileSize
+                );
+
+                _spriteBatch.Draw(
+                    tileSet.Texture,
+                    destination,
+                    source,
+                    Color.White
+                );
+            }
+        }
+    }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Aurora.Engine.Assets;
 using Aurora.Engine.Camera;
 using Aurora.Engine.Components;
@@ -9,7 +8,6 @@ using Aurora.Engine.Input;
 using Aurora.Engine.Physics;
 using Aurora.Engine.Rendering;
 using Aurora.Engine.Scenes;
-using Aurora.Engine.Serialization;
 using Aurora.Engine.Systems;
 using Aurora.Engine.Tilemaps;
 using Microsoft.Xna.Framework;
@@ -32,8 +30,8 @@ public class WorldScene : Scene
     // Render los TileSet
     private TileMap _map = null!;
     private TileRenderer _tileRenderer = null!;
-    private TileSet _tileSet = null!;
-    private Texture2D _tileSetTexture = null!;
+    private TileMapResource _tileMapResource = null!;
+    private TileMapManager _tileMapManager = null!;
 
     // Asignamos la textura 2D
     private Texture2D _playerTexture = null;
@@ -118,67 +116,40 @@ public class WorldScene : Scene
 
         _player.AddComponent(animation);
 
-        // Cargamos el tile set
-        _tileSetTexture =
-            _assets.LoadTexture("Textures/tileset");
-        _tileSet = new TileSet(_tileSetTexture);
-
-        _tileSet.RegisterTile(
-            0,
-            new Rectangle(0, 0, 32, 32)
-        );
-        _tileSet.RegisterTile(
-            1,
-            new Rectangle(32, 0, 32, 32)
-        );
-
-
-        // Generamos el mapa si si si
-        MapLoader loader = new();
-        _map = loader.Load(
-                "Content/Maps/test_map.json"
-            );
-        Debug.WriteLine(_map);
-        // capas como cebollas / layers
-        _baseLayer =
-            _map.GetLayer("Base");
-
-        _groundLayer =
-            _map.GetLayer("Ground");
-
-        _objectLayer =
-            _map.GetLayer("Object");
-        _topLayer =
-            _map.GetLayer("Top");
-        
-        _map.AddLayer( _groundLayer );
-        _map.AddLayer( _objectLayer );
-        _map.AddLayer( _topLayer );
-        _map.AddLayer( _baseLayer);
-
-        TileLayer collisionLayer =
-            _map.GetLayer("Collision");
-        
-
-
-        for (int y = 0; y < _map.Height; y++)
-        {
-            for (int x = 0; x < _map.Width; x++)
-            {
-                int tile =
-                    collisionLayer.GetTiles(x, y);
-                if(tile > 0)
+        _tileMapManager = new TileMapManager(_assets);
+        _tileMapResource = _tileMapManager.Add(
+            "world",
+            new TileMapDefinition(
+                "Content/Maps/test_map.json",
+                new Dictionary<string, string>
                 {
-                    _map.SetCollision(
-                        x,
-                        y,
-                        true
-                        );
+                    ["../tileset4.tsx"] = "Textures/tileset"
                 }
-                    
+            )
+            {
+                CollisionLayer = "Collision"
             }
+        );
+
+        _map = _tileMapResource.Map;
+        _baseLayer = GetRequiredLayer("Base");
+        _groundLayer = GetRequiredLayer("Ground");
+        _objectLayer = GetRequiredLayer("Objects");
+        _topLayer = GetRequiredLayer("Top");
+    }
+
+    private TileLayer GetRequiredLayer(string name)
+    {
+        TileLayer layer = _map.GetLayer(name);
+
+        if (layer == null)
+        {
+            throw new System.IO.InvalidDataException(
+                $"Required tilemap layer '{name}' was not found."
+            );
         }
-        
+
+        return layer;
     }
 
     // metodo de actualizacion para el movimiento
@@ -271,15 +242,17 @@ public class WorldScene : Scene
             transformMatrix: _camera.Transform);
         // cargamos el render de el tile 
         _tileRenderer.DrawLayer(
-            _map,
-            _groundLayer,
-            _tileSet            
-            );
+            _tileMapResource,
+            _baseLayer
+        );
         _tileRenderer.DrawLayer(
-            _map,
-            _objectLayer,
-            _tileSet
-            );
+            _tileMapResource,
+            _groundLayer
+        );
+        _tileRenderer.DrawLayer(
+            _tileMapResource,
+            _objectLayer
+        );
 
         // Cargamos el render el personaje 
         _entityRenderer.Draw(
@@ -287,11 +260,10 @@ public class WorldScene : Scene
             new Vector2(32, 32)
             );
 
-        //_tileRenderer.DrawLayer(
-        //    _map,
-        //    _topLayer,
-        //    _tileSet
-        //    );
+        _tileRenderer.DrawLayer(
+            _tileMapResource,
+            _topLayer
+        );
 
         
         _spriteBatch.End();
